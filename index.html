@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+<h1>HTML5 features</h1>
+<h2>Camera</h2>
+ <section id="splash">
+  <p id="errorMessage">Loading...</p>
+ </section>
+ <section id="app" hidden>
+ 	<form:form method="POST" commandName="picUploadForm"
+		enctype="multipart/form-data">
+  		<div style='float:left'><video id="monitor" autoplay></video></div><div style='float:right'><canvas id="photo"></canvas></div>
+  		<div style='float:left; margin-left: 10px;'><input type='button' value='Take a picture' onclick='snapshot()'></div>
+  		<div style='float:left; margin-left: 10px;'><input type='submit' onclick='upload()' /></div>
+  	</form:form>
+ </section>
+ 
+ 
+ <script type="text/javascript" src="../js/jquery-1.7.js"></script>
+ <script type="text/javascript" src="../js/jqSOAPClient.beta.js"></script>
+ <script>
+ var webserviceUrl = 'http://localhost:8080/OCRService/rest/';
+ var video = document.getElementById('monitor');
+  var canvas = document.getElementById('photo');
+  if(navigator.getUserMedia) {
+   navigator.getUserMedia('video', successCallback, errorCallback);
+   function successCallback( stream ) {
+    video.src = stream;
+    video.onerror = function () {
+      stream.stop();
+      noStream();
+    }
+    video.onloadedmetadata = function () {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      document.getElementById('splash').hidden = true;
+      document.getElementById('app').hidden = false;
+    }
+   }
+   function errorCallback( error ) {
+    document.getElementById('errorMessage').textContent = 
+        "An error occurred: [CODE " + error.code + "]";
+   }
+   function snapshot() {
+    canvas.getContext('2d').drawImage(video, 0, 0);
+   }
+   function noStream() {
+    document.getElementById('errorMessage').textContent = 'No camera available.';
+   }
+  } else {
+   document.getElementById('errorMessage').textContent = 
+      "Native web camera streaming is not supported in this browser!";
+  }
+  
+  function upload() {
+	  alert('in upload()');
+	  var url = webserviceUrl + "/picture/";
+	  alert(document.getElementById('photo'));
+	  var base64Img = getBase64Image(document.getElementById('photo'));
+		alert(base64Img);
+	  $.ajax({
+	      type: 'GET',   
+	      url: url,
+	      data: base64Img,
+	      contentType: "application/json; charset=utf-8",  
+	      dataType: 'json',
+	      success: function (data) { showConfirmConsumption(data); }
+	  }); 
+  }
+  
+  function getBase64Image(canvas) {
+	  	alert('in getBase64Image()');
+	    var dataURL = canvas.toDataURL();
+	    alert(dataURL);
+	    return dataURL;
+	}
+  
+  function showConfirmConsumption(data) {
+	  alert('in showConfirm()');
+	  alert(data);
+  }
+  
+ </script>
+</body>
+</html>
